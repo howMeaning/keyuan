@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.keyuan.mapper.GoodMapper">
+    <select id="searchAssociation" resultType="string" parameterType="object">
+        select  good_name as goodName
+         from good
+        where good_name like #{good_name}"%"
+    </select>
+    
+    <resultMap id="selectByStep" type="Good">
+        <id property="id" column="id"/>
+        <result property="goodName" column="good_name"/>
+        <result property="goodPrice" column="good_price"/>
+        <result property="goodType.typeName" column="type_name"/>
+        <result property="image" column="image"/>
+        <result property="soleNum" column="soleNum"/>
+        <result property="isDetail" column="is_detail"/>
+    </resultMap>
+    <select id="searchAll" resultMap="selectByStep" >
+        select
+            good.id,good.good_Name ,good.good_price ,good_type.type_name ,good.image,good.soleNum,good.have_detail
+        from
+            good left join good_type
+        on
+            good.type_id=good_type.type_id
+    </select>
+    
+</mapper>
