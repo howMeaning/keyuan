@@ -99,11 +99,16 @@ public class GoodServiceImpl extends ServiceImpl<GoodMapper,Good> implements IGo
     @Transactional
     public Result insertGood(MultipartFile multipartFile, Good good) {
         insertSnake(good);
-
+        insertOptional(good);
 
         return null;
     }
 
+    /**
+     * 插入小食
+     * @param good
+     * @return
+     */
     private List<String> insertSnake(Good good) {
        //插入snakeId
         Map<String, Integer> snakes = good.getSnake();
@@ -151,6 +156,13 @@ public class GoodServiceImpl extends ServiceImpl<GoodMapper,Good> implements IGo
             }
        }
         return snakeNames;
+    }
+
+    /**
+     * 插入可选项
+     * @param good
+     */
+    private void insertOptional(Good good) {
     }
 
 
