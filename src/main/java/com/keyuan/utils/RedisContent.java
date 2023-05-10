@@ -11,5 +11,11 @@ import org.springframework.util.ClassUtils;
 public final class RedisContent {
     public static final String CACHE_GOOD_KEY="cache:good";
     public static final String IMGAGENAME = ClassUtils.getDefaultClassLoader().getResource("").getPath()+ "/static/image";
+
     public static final String ORDERNAME="stream:order";
+
+    public static final String SNAKEKEY="good:snake";
+
+    public static final String OPTIONALkEY="good:optional";
+
 }

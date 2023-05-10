@@ -2,7 +2,10 @@ package com.keyuan.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.keyuan.entity.Good;
+import com.keyuan.entity.Optional;
+import com.keyuan.entity.Snake;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 
 /**
@@ -13,7 +16,13 @@ import java.util.List;
 
 public interface GoodMapper extends BaseMapper<Good> {
 
-    public List<String> searchAssociation(String inputName);
+    List<Good> searchAll();
 
-    public List<Good> searchAll();
+
+
+
+
+
+
+
 }

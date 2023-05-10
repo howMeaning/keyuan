@@ -28,6 +28,11 @@ public class UpLoadServiceImpl implements IUpLoadService {
         return imageName;
     }
 
+    /**
+     * 将照片转移
+     * @param imgFile
+     * @return
+     */
     private String getImage(MultipartFile imgFile) {
         if (imgFile.isEmpty()) {
             return "文件是空文件!";

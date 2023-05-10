@@ -22,7 +22,7 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
       password: '1234'
       username: root
-      url: jdbc:mysql://192.168.239.100:3306/keyuan?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      url: jdbc:mysql://192.168.239.100:3306/keyuan2?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       lettuce:
         pool:
           max-active: 10

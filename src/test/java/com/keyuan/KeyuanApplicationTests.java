@@ -16,9 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.keyuan.utils.RedisContent.CACHE_GOOD_KEY;
@@ -35,11 +33,11 @@ class KeyuanApplicationTests {
 	void contextLoads() {
 
 	}
-	@Test
+	/*@Test
 	public void testList(){
 		List<String> goods = goodMapper.searchAssociation("鸡蛋");
 		log.info("菜品:{}",goods);
-	}
+	}*/
 
 	@Test
 	public void testPath() throws FileNotFoundException {
@@ -67,6 +65,37 @@ class KeyuanApplicationTests {
 		}).collect(Collectors.toList());
 		System.out.println(collect);
 
+	}
+
+	/**
+	 * 拆分字符串
+	 */
+	@Test
+	public void testString(){
+		String s ="你好,啊,里";
+		String[] split = s.split(",");
+		String s1 = "";
+		for (String s2 : split) {
+			s1 += s2;
+		}
+		System.out.println(s1);
+	}
+
+	/**
+	 * testMap
+	 */
+	@Test
+	public void testMap(){
+		Map<String,Object> map  = new HashMap<>();
+		map.put("1", "你好");
+		map.put("2", "你好");
+		map.put("3", "你好");
+		map.put("4", "你好");
+		List<String> strings = null;
+		for (Map.Entry<String, Object> stringObjectEntry : map.entrySet()) {
+			strings = Collections.singletonList(stringObjectEntry.getKey());
+		}
+		System.out.println(strings);
 	}
 
 }

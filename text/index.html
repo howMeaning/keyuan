@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./js/jQuery.min.js"></script>
+    <style>
+        * {
+            box-sizing: content-box;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+        }
+
+        a {
+            font-style: none;
+        }
+
+        .good {
+            width: 300px;
+            height: 100px;
+            background-color: yellow;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .good img {
+            flex: .4;
+            height: 100%;
+            background-color: red;
+            border-radius: 10px;
+        }
+
+        .good .lf {
+            display: flex;
+            margin-left: 10px;
+            flex: .7;
+            flex-direction: column;
+            justify-content: space-between;
+
+        }
+
+        .lf p {
+            flex: .2;
+        }
+
+        .price {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .scale {
+            width: 55px;
+            height: 20px;
+            background-color: red;
+            text-align: center;
+            border-radius: 10px;
+            line-height: 20px;
+            color: #fff;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="good">
+        <img src="" alt="">
+        <div class="lf">
+            <p class="title">一品蒸饺</p>
+            <p class="soleNum">销量</p>
+            <p class="price">
+                <span class="num">价格</span>
+                <span class="scale">选规格</span>
+            </p>
+        </div>
+    </div>
+    <br>
+    <form action="">
+        口味:
+        辣<input type="checkbox" name="flavor" id="">
+        不辣<input type="checkbox" name="flavor" id="">
+        辣死了<input type="checkbox" name="flavor" id="">
+    </form>
+    <script>
+        $(function () {
+            $.ajax(
+                {
+                    //请求方式
+                    "type": "Get",
+                    //发送的路径
+                    "url": "/list/searchAll",
+                    //get请求和post请求传输的数据
+                    "data": null,
+                    //同步还是异步
+                    "async": true,
+                    //收到后端响应后,需要做的处理
+                    "success": function (jsonData) {
+                        $("#mydiv").html(jsonData.username);
+                    }
+                }
+            );
+        })
+
+    </script>
+</body>
+
+</html>
