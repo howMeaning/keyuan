@@ -97,5 +97,10 @@ class KeyuanApplicationTests {
 		}
 		System.out.println(strings);
 	}
+	
+	@Test
+	public void testGit(){
+		System.out.println("new Git");
+	}
 
 }
