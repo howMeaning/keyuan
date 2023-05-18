@@ -1,6 +1,8 @@
 package com.keyuan.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.keyuan.dto.GoodDTO;
 import com.keyuan.dto.Result;
 import com.keyuan.entity.Good;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +22,8 @@ public interface IGoodService extends IService<Good> {
 
     List<Good> searchAll();
 
-    Result insertGood(MultipartFile imgFile, Good good);
+    Result insertGood(GoodDTO goodDTO);
+
 
     /* Result getOrder();*/
 }

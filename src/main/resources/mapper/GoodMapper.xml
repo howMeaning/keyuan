@@ -36,23 +36,34 @@
         <result column="food_price" property="foodPrice"/>
         <result column="food_type" property="foodType"/>
         <result column="soleNum" property="soleNum"/>
-        <result column="snake_id" property="snakeId"/>
-        <result column="optional_id" property="optionalId"/>
         <result column="flavor_id" property="flavorId"/>
     </resultMap>
-    <insert id="insertSnake">
-
-    </insert>
     <insert id="insertOptional"></insert>
+    <insert id="insertGood">
+        insert into good(id,food_name,food_price,food_type,snake_id,optional_id,flavor_id,soleNum,image)
+        values(null,
+        #{foodName},
+        #{foodPrice},
+        #{foodType},
+        (
+        select snake_id from good_snake where snake_name in
+        <foreach collection="snakeNames" item="snakeName" separator="," open="(" close=")">
+            #{snakeName}
+        </foreach>
+        ),
+        (
+        select optional_id from good_optional where snake_name in
+        <foreach collection="optionalNames" item="optionalName" separator="," open="(" close=")">
+            #{optionalName}
+        </foreach>
+        )
+    </insert>
+
     <select id="searchAll" parameterType="Good" resultMap="searchGoods">
-        select id,food_name,food_price, food_type,soleNum  from good2
+        select id,food_name,food_price,food_type,snake_id,optional_id,flavor_id,soleNum,image from good
     </select>
-    <select id="selectSnake" resultType="com.keyuan.entity.Snake">
-        select snake_id,snake_name,snake_money from good_snake;
-    </select>
-    <select id="selectOptionals" resultType="com.keyuan.entity.Optional">
-        select optional_id,optional_name,optional_money from good_optional;
-    </select>
+
+
 
 
 </mapper>

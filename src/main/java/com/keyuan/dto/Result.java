@@ -2,6 +2,7 @@ package com.keyuan.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -13,15 +14,16 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class Result {
+    private Integer code;
     private Boolean success;
     private String errorMsg;
     private Object data;
     private Long total;
     public static Result ok(){
-        return new Result(true,null,null,null);
+        return new Result(HttpStatus.OK.value(), true,null,null,null);
     }
     public static Result ok(Object data){
-        return new Result(true,null,data,null);
+        return new Result(HttpStatus.OK.value(),true,null,data,null);
     }
 
     /**
@@ -30,10 +32,10 @@ public class Result {
      * @return
      */
     public static Result ok(List<Object> datas){
-        return new Result(true,null,datas,null);
+        return new Result(HttpStatus.OK.value(),true,null,datas,null);
     }
 
     public static Result fail(String errorMsg){
-        return new Result(false,errorMsg,null,null);
+        return new Result(HttpStatus.INTERNAL_SERVER_ERROR.value(),false,errorMsg,null,null);
     }
 }

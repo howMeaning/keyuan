@@ -1,10 +1,13 @@
 package com.keyuan;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.RandomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyuan.entity.Good;
+import com.keyuan.entity.Snake;
 import com.keyuan.mapper.GoodMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -12,10 +15,13 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,5 +108,12 @@ class KeyuanApplicationTests {
 	public void testGit(){
 		System.out.println("new Git");
 	}
+
+	@Test
+	public void testBean(){
+		Good good = new Good(null, null, null, null, null, 0,null);
+		System.out.println(good);
+	}
+
 
 }
