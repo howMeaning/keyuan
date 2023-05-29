@@ -2,7 +2,7 @@ package com.keyuan.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.keyuan.entity.Optional;
+import com.keyuan.entity.Scale;
 import com.keyuan.entity.Snake;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +12,8 @@ import lombok.experimental.Accessors;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -38,35 +40,43 @@ public class GoodDTO {
      * 食品类型
      */
     private String foodType;
-    /**
-     * 销量
-     */
-    private Long soleNum;
 
-    /**
-     *
-     * 大份 10
-     * 中份 11
-     * 小份 14
-     */
-    private String foodPrices;
     /**
      * 小食:
      * 火腿 2元
      * 鸡腿 6元
      */
-    private   Map<String, Integer> foodSnakes;
+    private   Map<String, BigDecimal> foodSnakes;
+
+    /**
+     * 初始钱数
+     */
+    private BigDecimal foodPrice;
+
+    /**
+     * 大
+     * 中
+     * 小
+     */
+    private  List<ScaleDTO> scales;
+
     /**
      * 可选:
      * 面条
      * 米粉
      * 河粉
      */
-    private String foodOptionals;
+    private List<String> foodOptionals;
     /**
      * 口味要求,有就是true没有就是false
      */
+    @TableField("flavor")
     private Boolean foodFlavor;
+
+
+    private Long shopId;
+
+
     /**
      * 照片文件
      */

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.keyuan.mapper.ShopMapper">
+    
+    <resultMap id="mapShop" type="shop">
+        <id column="id" property="id"></id>
+        <id column="type_id" property="typeId"></id>
+        <id column="name" property="shopName"></id>
+        <id column="address" property="address"></id>
+        <id column="use_id" property="userId"></id>
+        <id column="shop_function" property="function"></id>
+        <id column="open_hour" property="openHour"></id>
+        <id column="x" property="x"></id>
+        <id column="y" property="y"></id>
+        <id column="sold" property="sold"></id>
+        <id column="avg_price" property="avgPrice"></id>
+        <id column="create_time" property="createTime"></id>
+        <id column="update_time" property="updateTime"></id>
+        <id column="image" property="image"></id>
+        <id column="area" property="area"></id>
+    </resultMap>
+    
+    <insert id="insertShop" keyProperty="id" useGeneratedKeys="true">
+        insert into  t_shop(id,type_id,name,address,use_id,shop_function,open_hour,x,y,sold,avg_price,create_time,update_time,image,area)
+        values(null,#{typeId},#{shopName},#{address},#{userId},#{function},#{openHour},#{x},#{y},#{sold},#{avgPrice},#{createTime},#{updateTime},#{image},#{area})
+    </insert>
+    <select id="selectShopByType" resultType="com.keyuan.entity.Shop">
+        select id,type_id,name,address,use_id,shop_function,open_hour,x,y,sold,avg_price,create_time,update_time,image,area
+        <where>
+            type_id = #{typeID}
+            limit #{}
+        </where>
+    </select>
+    <select id="selectAll" resultType="com.keyuan.entity.Shop">
+
+    </select>
+    <select id="selectShopById" resultType="com.keyuan.entity.Shop">
+        select id,type_id,name,address,use_id,shop_function,open_hour,x,y,sold,avg_price,create_time,update_time,image,area
+        <where>
+            id in
+            <foreach collection="ids" open="(" separator="," item="id" close=")">
+                #{id}
+            </foreach>
+            order by
+            Field(
+            <foreach collection="ids"  separator="," item="id" >
+                #{id}
+            </foreach>
+
+        </where>
+    </select>
+    <select id="selectShopOne" resultType="com.keyuan.entity.Shop">
+        select id,type_id,name,address,use_id,shop_function,open_hour,x,y,sold,avg_price,create_time,update_time,image,area
+        <where>
+            id = #{id} and type_id = #{typeId}
+        </where>
+    </select>
+</mapper>

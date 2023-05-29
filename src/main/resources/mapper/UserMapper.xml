@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.keyuan.mapper.UserMapper">
+    <resultMap id="mapUser" type="user">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="shopId" column="shop_id"/>
+        <result property="phone" column="phone"/>
+        <result property="icon" column="icon"/>
+        <result property="createTime" column="create_Time"/>
+        <result property="area" column="area"/>
+        <result property="x" column="x"/>
+        <result property="y" column="y"/>
+    </resultMap>
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user(id,name,shop_id,phone,icon,create_Time,area,x,y,token) values(#{id},#{name},#{phone},#{icon},#{createTime},#{area},#{x},#{y},#{token})
+    </insert>
+    <update id="updateUserPhoneById">
+        update t_user set phone = #{phone} where id = #{id}
+    </update>
+    <update id="updateAreaById">
+        update t_user set x=#{x},y=#{y} where id = #{id}
+    </update>
+    <select id="selectUserByToken" resultType="com.keyuan.entity.User">
+            select id,name,shop_id,phone,icon,create_Time,area,x,y,token where token =#{token}
+    </select>
+</mapper>

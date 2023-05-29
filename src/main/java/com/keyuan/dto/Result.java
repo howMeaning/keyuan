@@ -26,6 +26,9 @@ public class Result {
         return new Result(HttpStatus.OK.value(),true,null,data,null);
     }
 
+    public static Result ok(Integer code,Object data){
+        return new Result(code, true,null,null,null);
+    }
     /**
      * 返回多个数据
      * @param datas
@@ -37,5 +40,8 @@ public class Result {
 
     public static Result fail(String errorMsg){
         return new Result(HttpStatus.INTERNAL_SERVER_ERROR.value(),false,errorMsg,null,null);
+    }
+    public static Result fail(Integer code,String errorMsg){
+        return new Result(code,false,errorMsg,null,null);
     }
 }

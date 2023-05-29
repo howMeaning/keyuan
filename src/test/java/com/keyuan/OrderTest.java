@@ -3,16 +3,20 @@ package com.keyuan;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyuan.entity.Order;
 import com.keyuan.mapper.GoodMapper;
+import com.keyuan.mapper.OrderMapper;
 import com.keyuan.utils.RedisContent;
 import com.keyuan.utils.RedisSolve;
+import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.lib.jse.JsePlatform;
+
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -27,14 +31,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalUnit;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static com.keyuan.utils.RedisContent.CACHE_ORDERNAME;
 
 /**
  * @descrition:
@@ -47,12 +56,16 @@ public class OrderTest {
     @Autowired
     private GoodMapper goodMapper;
 
+    @Resource
+    private RabbitTemplate template;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    @Resource
+    private OrderMapper mapper;
     @Resource
     private RedisSolve redisSolve;
     @Test
@@ -95,33 +108,22 @@ public class OrderTest {
 
     @Test
     public void testHash(){
-        Order order = new Order();
-        order.setOrderNumber(123135).setId(12312313L).setStatus(122).setPayTime(LocalDateTime.now()).setCreateTime(LocalDateTime.now());
-        stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME,String.valueOf(order.getId()),JSONUtil.toJsonStr(order));
-    }
+
+        /*Object o = stringRedisTemplate.opsForHash().get(CACHE_ORDERNAME, String.valueOf(10L));
+        Integer integer = Integer.valueOf(o);*/
+        HashOperations<String, Object, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
+        String s = stringObjectObjectHashOperations.get(CACHE_ORDERNAME, String.valueOf(10L));
+        System.out.println(Integer.valueOf(s));
+
+        redisSolve.put(CACHE_ORDERNAME, String.valueOf(20L), 500);
+
+        }
     private static final DefaultRedisScript<Long> ORDER_SCRIPT;
 
     static{
         ORDER_SCRIPT = new DefaultRedisScript<>();
         ORDER_SCRIPT.setLocation(new ClassPathResource("order.lua"));
         ORDER_SCRIPT.setResultType(Long.class);
-    }
-    @Test
-    public void testScript(){
-        Order order = new Order();
-        order.setOrderNumber(12313).setId(1231232221211L).setStatus(122).setPayTime(LocalDateTime.now()).setCreateTime(LocalDateTime.now());
-
-        //执行脚本
-        Long execute = stringRedisTemplate.execute(ORDER_SCRIPT, Collections.emptyList(),
-                RedisContent.CACHE_ORDERNAME,
-                String.valueOf(order.getId()),
-                RedisContent.STREAM_ORDERNAME,
-                String.valueOf(order.getOrderNumber()),
-                JSONUtil.toJsonStr(order)
-
-        );
-        log.info("result:{}",execute);
-
     }
 
 
@@ -138,29 +140,24 @@ public class OrderTest {
             }
             //不为空直接incre就行
             Long increment = stringRedisTemplate.opsForValue().increment(RedisContent.RANDOMNUMBER + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy:MM:dd")));
-            log.info("t:{}",            increment.intValue());
+            log.info("t:{}",increment.intValue());
         }
 
-        @Test
-        public void testStream(){
-            Order order = new Order();
-            order.setOrderNumber(12313).setId(1231232221211L).setStatus(122).setPayTime(LocalDateTime.now()).setCreateTime(LocalDateTime.now());
 
-            //首先查看
-            HashOperations<String, Object, Order> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
-            Order cacheOrder = stringObjectObjectHashOperations.get(RedisContent.CACHE_ORDERNAME, order.getId());
-            if (BeanUtil.isNotEmpty(cacheOrder)){
-                log.error("不允许重复下单!");
-                return;
-            }
-            stringObjectObjectHashOperations.put(RedisContent.CACHE_ORDERNAME, order.getId(), order);
-
-
-            RecordId recordId = stringRedisTemplate.opsForStream().add(RedisContent.STREAM_ORDERNAME, BeanUtil.beanToMap(order));
-
-
-            stringRedisTemplate.opsForStream().createGroup(RedisContent.STREAM_ORDERNAME, "mygroup");
-
-            stringRedisTemplate.opsForStream().claim(RedisContent.CACHE_ORDERNAME, "mygroup","consumerB", Duration.ofMinutes(20),recordId);
+    @Test
+    public void testMapper(){
+            Order order = mapper.selectOne(new QueryWrapper<Order>().eq("order_id", 1L));
+            System.out.println(order);
         }
+
+    @Test
+    public void testZset(){
+        stringRedisTemplate.opsForZSet().remove(RedisContent.RANKKEY,String.valueOf(1000) );
+    }
+
+    @Test
+    public  void testOrder(){
+        Order order = new Order(null,1001,"1001,1002",10L,"不要放辣椒",10001L,0,10,LocalDateTime.now(),LocalDateTime.now().plusHours(1),LocalDateTime.now().plusHours(2),333,new BigDecimal(10.5));
+
+    }
 }

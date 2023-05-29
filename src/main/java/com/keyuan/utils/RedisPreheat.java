@@ -38,7 +38,7 @@ public class RedisPreheat implements InitializingBean {
     //TODO:这里需要用SortedSet进行存入,要加查询到的所有的数据进行排序
     @Override
     public void afterPropertiesSet() {
-        if ( stringRedisTemplate.opsForZSet().size(RedisContent.CACHE_GOOD_KEY)!=0){
+       /* if ( stringRedisTemplate.opsForZSet().size(RedisContent.CACHE_GOOD_KEY)!=0){
             return;
         }
         List<Good> goods = goodService.searchAll();
@@ -47,7 +47,7 @@ public class RedisPreheat implements InitializingBean {
             stringRedisTemplate.opsForZSet().addIfAbsent(RedisContent.CACHE_GOOD_KEY,goodJson,good.getSoleNum());
         }
         //这是过期时间
-        stringRedisTemplate.expire(RedisContent.CACHE_GOOD_KEY,30, TimeUnit.DAYS);
+        stringRedisTemplate.expire(RedisContent.CACHE_GOOD_KEY,30, TimeUnit.DAYS);*/
     }
     /**
      * 版本2 用Cache预热所有的商品信息

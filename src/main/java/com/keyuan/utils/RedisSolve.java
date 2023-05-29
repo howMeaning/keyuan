@@ -96,9 +96,15 @@ public class RedisSolve {
          * @param timeUnit
          * @throws JsonProcessingException
          */
-    public void putWithExpire(String key,String field,Object value,Long time,TimeUnit timeUnit) throws JsonProcessingException {
-        stringRedisTemplate.opsForHash().put(key,field,objectMapper.writeValueAsString(value));
+    public void putWithExpire(String key,String field,Object value,Long time,TimeUnit timeUnit)  {
+        try {
+            stringRedisTemplate.opsForHash().put(key,field,objectMapper.writeValueAsString(value));
+        } catch (JsonProcessingException e) {
+            log.error("序列化失败,value:{}",value);
+            throw new RuntimeException(e);
+        }
         stringRedisTemplate.expire(key, time,timeUnit);
     }
+
 
 }

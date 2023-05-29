@@ -2,10 +2,10 @@ package com.keyuan.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.jni.Local;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -17,8 +17,10 @@ import java.time.LocalDateTime;
  * @date:2023/3/17
  **/
 @Data
-@Table("order")
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Table("t_order")
 public class Order {
     /**
      * 全局唯一id
@@ -29,23 +31,51 @@ public class Order {
      * 随机数
      */
     private Integer orderNumber;
+    /**
+     * 商品的id,可能有多个
+     */
+    private String goodId;
 
     /**
      * 商店名称,前端传
      */
-    private String shopName;
+    private Long shopId;
 
     /**
-     * 商家手机号,前端传
+     * 备注
      */
-    private String shopPhone;
+    private String remark;
 
+    /**
+     * userid 前端不需要传
+     */
+    private Long userId;
+
+    /**
+     * 就餐方式 1是堂食 0是打包
+     */
+    private Integer useType;
+
+    /**
+     * 桌号 前端传
+     */
     private Integer tableId;
-
+    /**
+     * 创建时间 当前的时间
+     * 注意:该时间和支付时间是有时间差的
+     * 创建时间和支付时间应该有先后顺序(如何保证先后顺序?)
+     */
+    private LocalDateTime createTime;
     /**
      * 支付时间 当前时间 前端传
      */
     private LocalDateTime payTime;
+    /**
+     * 退款时间
+     */
+    private LocalDateTime refundTime;
+
+
 
     /**
      * 交易状态
@@ -53,12 +83,7 @@ public class Order {
     @TableField(value = "order_status")
     private Integer status;
 
-    /**
-     * 创建时间 当前的时间
-     * 注意:该时间和支付时间是有时间差的
-     * 创建时间和支付时间应该有先后顺序(如何保证先后顺序?)
-     */
-    private LocalDateTime createTime;
+
 
     /**
      * 支付金额 前端传

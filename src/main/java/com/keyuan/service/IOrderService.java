@@ -1,12 +1,16 @@
 package com.keyuan.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.keyuan.dto.OrderDTO;
 import com.keyuan.dto.Result;
 import com.keyuan.entity.Order;
 
-import java.util.concurrent.ExecutionException;
+import java.util.List;
 
 public interface IOrderService extends IService<Order> {
-    int createOrder(Order order) throws ExecutionException, InterruptedException;
+    Order createOrder(Order order);
+
+    Result confirmOrder(Order order);
+
+    List<Order> getAllOrder();
+
 }

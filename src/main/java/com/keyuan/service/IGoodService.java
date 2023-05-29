@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.keyuan.dto.GoodDTO;
 import com.keyuan.dto.Result;
 import com.keyuan.entity.Good;
+import com.keyuan.entity.Order;
+import com.keyuan.entity.Shop;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,10 +22,16 @@ public interface IGoodService extends IService<Good> {
 
     Result searchGoodByName(String goodName);*/
 
-    List<Good> searchAll();
+   Result searchAll(Long shopId);
 
     Result insertGood(GoodDTO goodDTO);
 
+    Integer updateSoleNumByIds(String orderId,Long shopId);
 
-    /* Result getOrder();*/
+    List<Good> getRankFive(Long shopId);
+
+
+    Result logicRemoveGoodbyId(Long id);
+
+    Result removeGoodById(Long id,Long shopId);
 }

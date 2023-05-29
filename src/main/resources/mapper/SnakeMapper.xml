@@ -4,6 +4,33 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.keyuan.mapper.SnakeMapper">
 
+    <resultMap id="mapSnake" type="snake">
+        <id column="snake_id" property="snakeId"></id>
+        <id column="shop_id" property="shopId"></id>
+        <id column="snake_name" property="snakeName"></id>
+        <id column="snake_money" property="snakeMoney"></id>
+    </resultMap>
 
+    <insert id="insertSnake">
+        insert into good_snake(snake_id,shop_id,snake_name,snake_money) values(#{snakeId},#{shopId},#{snakeName},#{snakeMoney})
+    </insert>
+    <!--批量查-->
+    <select id="selectBySnakeIdSnakes" resultType="com.keyuan.entity.Snake">
+        select snake_id,shop_id,snake_name,snake_money from good_snake
+        <where>
+            snake_id in
+            <foreach collection="ids" open="(" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+            and shop_id= #{shopId}
+        </where>
 
+    </select>
+    <select id="selectOneBySnakeId" resultType="com.keyuan.entity.Snake">
+        select snake_id,shop_id,snake_name,snake_money from good_snake where snake_id = #{id}
+    </select>
+    <select id="selectOneBySnakeName" resultType="com.keyuan.entity.Snake">
+        select snake_id,shop_id,snake_name,snake_money from good_snake where snake_name = #{snakeName}
+
+    </select>
 </mapper>

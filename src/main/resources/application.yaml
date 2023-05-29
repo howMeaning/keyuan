@@ -5,7 +5,14 @@ server:
       force-response: true
       charset: UTF-8
 spring:
-  mvc:
+  #rabbitmq的配置
+  rabbitmq:
+    host: 192.168.239.100
+    port: 5672
+    username: admin
+    password: 123
+    #开启发布确认模式
+    publisher-confirm-type: correlated
   application:
     name: keyuan
   redis:
@@ -32,6 +39,8 @@ spring:
       jackson:
         default-property-inclusion: non_null #  #不为空的属性才会序列化,具体属性可看JsonInclude.Include
       type: com.alibaba.druid.pool.DruidDataSource
+
+
   #别名类
   servlet:
     multipart:
@@ -45,6 +54,13 @@ mybatis-plus:
       id-type: auto
   configuration:
     aggressive-lazy-loading: true
+
+#pageHelp的配置
+# PageHelper分页插件
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+  params: count=countSql
 logging:
   #日志的等级
   level:

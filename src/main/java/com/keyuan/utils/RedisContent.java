@@ -10,17 +10,27 @@ import org.springframework.util.ClassUtils;
  **/
 
 public final class RedisContent {
-    public static final String CACHE_GOOD_KEY="cache:good";
     public static final String IMGAGENAME =ClassUtils.getDefaultClassLoader().getResource("").getPath()+ "/static/image";
 
+    public static final String SNAKEKEY="good:snake:";
 
-    public static final String SNAKEKEY="good:snake";
-    public static final String OPTIONALKEY="good:optional";
+    public static final String SCALEKEY="good:scale:";
 
-    public static final String RANDOMNUMBER = "order:";
+    public static final String RANDOMNUMBER = "order:random:";
 
-    public static final String STREAM_ORDERNAME="stream:order";
+    public static final String CACHEGOOD = "cache:good:";
 
-    public static final String CACHE_ORDERNAME="cache:order";
+    public static final String RANKKEY = "good:rank:";
+
+    public static final String CACHE_ORDERNAME="cache:order:userid:";
+
+    public static final String LOCKKEY = "lock:order:";
+
+    public static final String CACHESHOPGEO = "shop:geo:";
+
+    public static final String CACHEUSER = "cache:user:";
+
+
+
 
 }
