@@ -2,6 +2,7 @@ package com.keyuan.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.Editor;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -16,6 +17,7 @@ import com.keyuan.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -54,13 +56,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return
      */
     @Override
+    @Transactional
     public Result createUser(User user) {
         //这里生成token
         String token = UUID.randomUUID().toString(true);
         user.setToken(token);
         //找缓存
-        int i = userMapper.insertUser(user);
-        if (i==0){
+        int success = userMapper.insertUser(user);
+        if (success==0){
             return Result.fail("创建用户失败!");
         }
 
@@ -68,10 +71,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         //将用户存在缓存当中
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
-        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(),
-                CopyOptions.create().setIgnoreNullValue(true)
-                        .setFieldValueEditor((feildName, fieldValue) -> fieldValue.toString()));
+        log.info("UserDTO:{}",userDTO);
+        Map<String, Object> map = BeanUtil.beanToMap(userDTO, new HashMap<>(),true,true);
+        map.replaceAll((fieldName, fieldValue) -> fieldValue.toString());
+        log.info("map:{}",map);
         stringRedisTemplate.opsForHash().putAll(RedisContent.CACHEUSER+token,map);
+
         userMap.put(user.getId(),token);
         return Result.ok(userMap);
     }
@@ -122,6 +127,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
+    /**
+     * 这里尽量还是前端传好一点
+     * @param shopId
+     * @return
+     */
+    @Override
+    public Long selectUserByShopId(Long shopId) {
+        return userMapper.selectUserByShopId(shopId);
+    }
+
+    @Override
+    public User selectUserById(Long id) {
+        return  userMapper.selectUserById(id);
+    }
 
 
 }

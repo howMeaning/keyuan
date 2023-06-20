@@ -16,7 +16,7 @@
     </resultMap>
 
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
-        insert into t_user(id,name,shop_id,phone,icon,create_Time,area,x,y,token) values(#{id},#{name},#{phone},#{icon},#{createTime},#{area},#{x},#{y},#{token})
+        insert into t_user(id,name,shop_id,phone,icon,create_Time,area,x,y,token) values(#{id},#{name},#{shopId},#{phone},#{icon},#{createTime},#{area},#{x},#{y},#{token})
     </insert>
     <update id="updateUserPhoneById">
         update t_user set phone = #{phone} where id = #{id}
@@ -26,5 +26,11 @@
     </update>
     <select id="selectUserByToken" resultType="com.keyuan.entity.User">
             select id,name,shop_id,phone,icon,create_Time,area,x,y,token where token =#{token}
+    </select>
+    <select id="selectUserByShopId" resultType="java.lang.Long">
+        select id from t_user where shop_id = #{shopId}
+    </select>
+    <select id="selectUserById" resultType="com.keyuan.entity.User">
+        select  * from t_user where id = #{id}
     </select>
 </mapper>

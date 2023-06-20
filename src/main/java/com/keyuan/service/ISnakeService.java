@@ -8,7 +8,7 @@ import com.keyuan.entity.Snake;
 import java.util.List;
 
 public interface ISnakeService extends IService<Snake> {
-    Result getSnake(String ids,Long shopId);
+    List<Snake> getSnake(String ids,Long shopId);
 
      List<String> insertSnake(GoodDTO goodDTO);
 

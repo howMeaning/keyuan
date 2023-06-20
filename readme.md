@@ -24,7 +24,7 @@
 
 github的路径:https://github.com/howMeaning/keyuan
 
-git的路径:
+gitee的路径:https://gitee.com/how-meaningful/git-test
 
 ## 2.功能的实现
 
@@ -40,31 +40,55 @@ JSON模板:
 
 ```
  {
-        "id": null,
-        "foodName": "食品名称",
-        "foodType": "textType",
-        "foodSnakes": {
-            "小食1": 100,
-            "小食2": 100,
-            "小食3": 100
-        },
+        "id": 1,
+        "foodName": "foodName",
+        "foodType": "foodType",
+        "foodSnakes": [
+            {
+                "snakeId": 1,
+                "snakeName": "名字",
+                "snakeMoney": 10.199999999999999289457264239899814128875732421875,
+                "shopId": 10
+            },
+            {
+                "snakeId": 2,
+                "snakeName": "名字",
+                "snakeMoney": 10.300000000000000710542735760100185871124267578125,
+                "shopId": 10
+            }
+        ],
         "foodPrice": 10,
         "scales": [
             {
-                "id": null,
-                "scale": "小",
-                "price": 10,
-                "goodId": 12
+                "id": 1,
+                "scaleName": "名字",
+                "scalePrice": 10.300000000000000710542735760100185871124267578125,
+                "goodId": 10
+            },
+            {
+                "id": 1,
+                "scaleName": "名字",
+                "scalePrice": 10.300000000000000710542735760100185871124267578125,
+                "goodId": 10
+            },
+            {
+                "id": 1,
+                "scaleName": "名字",
+                "scalePrice": 10.300000000000000710542735760100185871124267578125,
+                "goodId": 10
             }
         ],
         "foodOptionals": [
+            "面",
             "米粉",
-            "肠粉",
-            "炒粉"
+            "肠粉"
         ],
+        "flavor": 1,
         "foodFlavor": false,
         "shopId": 10,
-        "image": null
+        "soleNum": 100,
+        "imageFile": null,
+        "image": "转换后"
     }
 ```
 
@@ -291,3 +315,8 @@ id:userId
 
 Get请求:http://localhost:8081/user//getUser
 
+### (5)几个问题的更新解决方法
+
+- redis的同步问题
+  - 这里尽量使用mq做消息同步
+- mq消息的发送问题,这里不要直接发整个订单信息,而是发一个id,后期根据id通过查的方式来找

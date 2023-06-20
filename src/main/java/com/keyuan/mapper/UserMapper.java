@@ -19,4 +19,8 @@ public interface UserMapper extends BaseMapper<User> {
     User selectUserByToken(String token);
 
     Integer updateAreaById(@Param("x") Double x,@Param("y") Double y,@Param("id") Long id);
+
+    Long selectUserByShopId(Long shopId);
+
+    User selectUserById(Long id);
 }

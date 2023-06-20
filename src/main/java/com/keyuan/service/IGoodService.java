@@ -26,7 +26,7 @@ public interface IGoodService extends IService<Good> {
 
     Result insertGood(GoodDTO goodDTO);
 
-    Integer updateSoleNumByIds(String orderId,Long shopId);
+    Integer updateSoleNumByIds(String goodIds,Long shopId);
 
     List<Good> getRankFive(Long shopId);
 

@@ -1,6 +1,9 @@
 package com.keyuan.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.bean.copier.ValueProvider;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keyuan.dto.GoodDTO;
@@ -16,7 +19,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @descrition:
@@ -37,12 +43,37 @@ public class ScaleServiceImpl extends ServiceImpl<ScaleMapper, Scale> implements
      * @return
      */
     @Override
-    public Result getScale(Long goodId,Long shopId) {
-           Scale scale = scaleMapper.selectScaleByGoodId(goodId,shopId);
-           if (scale==null){
-               return Result.fail("抱歉,当前商品没有规格!");
-           }
-            return Result.ok(scale);
+    public List<ScaleDTO> getScale(Long goodId,Long shopId) {
+       Scale scale = scaleMapper.selectScaleByGoodId(goodId,shopId);
+       if (scale==null){
+               return Collections.emptyList();
+       }
+           //不为null,进行字符的拆分转成List<ScaleDTO>
+        String prices = scale.getPrice();
+        String scales = scale.getScale();
+        log.info("prices:{}",prices);
+        log.info("scales:{}",scales);
+        if (scales==null &&prices==null){
+            return Collections.emptyList();
+        }
+        List<String> scaleList = new ArrayList<>();
+        List<String> priceList = new ArrayList<>();
+        String[] priceStr = prices.split(",");
+        String[] scaleStr = scales.split(",");
+        Collections.addAll(scaleList,priceStr);
+        Collections.addAll(priceList,scaleStr);
+        log.info("scaleListlen:{}",scaleList.size());
+        log.info("priceListlen:{}",priceList.size());
+        List<ScaleDTO> scaleDTOS = new ArrayList<>();
+        //将两个相同的集合转成一个Map集合
+        Map<String, String> map= IntStream.range(0,scaleList.size())
+                .collect(HashMap::new,(m,i)->m.put(scaleList.get(i),priceList.get(i)),(m,n)->{});
+        for (Map.Entry<String, String> stringStringEntry : map.entrySet()) {
+            ScaleDTO scaleDTO = BeanUtil.copyProperties(scale, ScaleDTO.class);
+            scaleDTO.setScaleName(stringStringEntry.getKey()).setScalePrice(new BigDecimal(stringStringEntry.getValue()));
+            scaleDTOS.add(scaleDTO);
+        }
+        return scaleDTOS;
     }
 
     /**
@@ -56,8 +87,8 @@ public class ScaleServiceImpl extends ServiceImpl<ScaleMapper, Scale> implements
         StringBuffer scaleBuffer = new StringBuffer();
         StringBuffer priceBuffer = new StringBuffer();
         for (ScaleDTO scale : scales) {
-            scaleBuffer.append(scale.getScale()+",");
-            priceBuffer.append(scale.getPrice()+",");
+            scaleBuffer.append(scale.getScaleName()+",");
+            priceBuffer.append(scale.getScalePrice()+",");
         }
         scaleBuffer.deleteCharAt(scaleBuffer.length()-1);
         priceBuffer.deleteCharAt(priceBuffer.length()-1);

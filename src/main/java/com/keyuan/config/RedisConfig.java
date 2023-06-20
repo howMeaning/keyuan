@@ -33,7 +33,7 @@ public class RedisConfig {
     public RedissonClient redissonClient(){
         //创建配置对象
         Config config = new Config();
-        config.useSingleServer().setAddress("redis://192.168.239.100:6379").setPassword("1234");
+        config.useSingleServer().setAddress("redis://192.168.239.100:6380").setPassword("1234");
         return Redisson.create(config);
     }
 

@@ -46,7 +46,7 @@ public class GoodDTO {
      * 火腿 2元
      * 鸡腿 6元
      */
-    private   Map<String, BigDecimal> foodSnakes;
+    private   List<Snake> foodSnakes;
 
     /**
      * 初始钱数
@@ -67,19 +67,23 @@ public class GoodDTO {
      * 河粉
      */
     private List<String> foodOptionals;
+
+    private Integer flavor;
+
     /**
      * 口味要求,有就是true没有就是false
      */
-    @TableField("flavor")
     private Boolean foodFlavor;
 
 
     private Long shopId;
 
+    private Long soleNum;
 
     /**
      * 照片文件
      */
-    @TableField(exist = false)
-    private MultipartFile image;
+    private MultipartFile imageFile;
+
+    private String image;
 }

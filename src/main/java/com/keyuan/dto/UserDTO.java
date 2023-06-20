@@ -1,5 +1,6 @@
 package com.keyuan.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 /**
@@ -20,5 +21,5 @@ public class UserDTO {
 
     private Double y;
 
-
+    private String token;
 }

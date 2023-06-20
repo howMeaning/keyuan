@@ -32,4 +32,6 @@ public interface GoodMapper extends BaseMapper<Good> {
     Integer updateDeleteById(Long id, LocalDateTime endTime);
 
     Long selectIdByName(String foodName);
+
+    List<String> selectAllType();
 }

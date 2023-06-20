@@ -1,5 +1,6 @@
 package com.keyuan.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keyuan.dto.GoodDTO;
@@ -36,7 +37,7 @@ public class SnakeServiceImpl extends ServiceImpl<SnakeMapper, Snake> implements
      * @return
      */
     @Override
-    public Result getSnake(String snakeId,Long shopId) {
+    public List<Snake> getSnake(String snakeId,Long shopId) {
         log.info("ids:{}",snakeId);
         String[] idStr = snakeId.split(",");
         List<String> idList = new ArrayList<>(Arrays.asList(idStr));
@@ -45,11 +46,11 @@ public class SnakeServiceImpl extends ServiceImpl<SnakeMapper, Snake> implements
         List<Snake> snakes = snakeMapper.selectBySnakeIdSnakes(resultList,shopId);
         if (snakes !=null){
             log.info("snakes不为null:{}",snakes);
-                return Result.ok(snakes);
+                return snakes;
         }else {
                 //这里表示数据库也没有
                 log.info("抱歉:没有这个id的商品,商品id:{}",resultList);;
-                return Result.ok(Collections.emptyList());
+                return Collections.emptyList();
             }
         }
 
@@ -62,26 +63,27 @@ public class SnakeServiceImpl extends ServiceImpl<SnakeMapper, Snake> implements
      */
     @Override
     public List<String> insertSnake(GoodDTO goodDTO) {
-        Map<String, BigDecimal> snakes = goodDTO.getFoodSnakes();
-        List<String> snakeNames = new ArrayList<>(snakes.size());
+        List<Snake> foodSnakes = goodDTO.getFoodSnakes();
+        List<String> snakeNames = new ArrayList<>(foodSnakes.size());
         int i =0;
-        for (Map.Entry<String, BigDecimal> stringIntegerEntry : snakes.entrySet()) {
+        for (Snake snakes:foodSnakes) {
             //小食名字
-            String snakeName = stringIntegerEntry.getKey();
+            String snakeName = snakes.getSnakeName();
             //小食费用
-            BigDecimal snakeMoney = stringIntegerEntry.getValue();
+            BigDecimal snakeMoney = snakes.getSnakeMoney();
             //先找数据库,数据库存在则直接返回
             Snake snake = snakeMapper.selectOneBySnakeName(snakeName);
-            if (snake == null){
+            if (BeanUtil.isEmpty(snake)){
                 //如果不存在则直接返回空
-                return Collections.emptyList();
-               /* snake=  new Snake(null,snakeName,snakeMoney,goodDTO.getShopId());
+                //这里不存在,应该进行审核
+                //后期优化:审核下需要用RabbitMQ进行消息传输给指定的管理员
+                //但是这里由于时间问题进行后期的优化
+//                return Collections.emptyList();
+                snake=  new Snake(null,snakeName,snakeMoney,goodDTO.getShopId());
                 log.info("snake:{}",snake);
                  i+= snakeMapper.insertSnake(snake);
-
-                snakeNames.add(snakeName);*/
+                snakeNames.add(snakeName);
             }
-
             snakeNames.add(snakeName);
         }
         return snakeNames;

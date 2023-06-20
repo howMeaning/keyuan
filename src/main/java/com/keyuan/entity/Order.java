@@ -26,7 +26,7 @@ public class Order {
      * 全局唯一id
      */
     @TableId("order_id")
-    private Long id;
+    private Long orderId;
     /**
      * 随机数
      */
@@ -66,6 +66,7 @@ public class Order {
      * 创建时间和支付时间应该有先后顺序(如何保证先后顺序?)
      */
     private LocalDateTime createTime;
+
     /**
      * 支付时间 当前时间 前端传
      */
@@ -75,18 +76,20 @@ public class Order {
      */
     private LocalDateTime refundTime;
 
-
-
     /**
      * 交易状态
      */
     @TableField(value = "order_status")
-    private Integer status;
-
-
+    private Integer orderStatus;
 
     /**
-     * 支付金额 前端传
+     * 需付金额 前端传
+     */
+    private BigDecimal requireMoney;
+
+    /**
+     * 实付金额 前端传
      */
     private BigDecimal payMoney;
+
 }

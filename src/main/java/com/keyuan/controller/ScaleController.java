@@ -1,6 +1,7 @@
 package com.keyuan.controller;
 
 import com.keyuan.dto.Result;
+import com.keyuan.dto.UserDTO;
 import com.keyuan.service.IScaleService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ public class ScaleController {
      */
     @GetMapping("/getScale/{id}/{shopId}")
     public Result getScale(@RequestParam("id")Long goodId,@RequestParam("shopId")Long shopId){
-        return scaleService.getScale(goodId,shopId);
+        return Result.ok(scaleService.getScale(goodId,shopId));
     }
 
 }

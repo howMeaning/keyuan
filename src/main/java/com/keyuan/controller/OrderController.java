@@ -26,13 +26,12 @@ public class OrderController {
     IOrderService orderService;
     @PostMapping("/createOrder")
     public Result createOrder(@RequestBody Order order){
-        orderService.createOrder(order);
-       return Result.ok(order);
+        return orderService.createOrder(order);
     }
 
     @PostMapping("/confirmOrder")
     public Result confirmOrder(@RequestBody Order order){
-        return orderService.confirmOrder(order);
+        return orderService.OrderManager(order);
     }
 
 
@@ -41,5 +40,8 @@ public class OrderController {
         return Result.ok(orderService.getAllOrder());
     }
 
-
+/*    @PostMapping("/cancelOrder")
+    public Result cancelOrder(@RequestBody Order order){
+        return orderService.cancelOrder(order);
+    }*/
 }

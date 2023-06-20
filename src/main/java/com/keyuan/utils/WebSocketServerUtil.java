@@ -10,6 +10,7 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @descrition:
@@ -17,17 +18,18 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @date:2023/5/22
  **/
 @Component
-@ServerEndpoint("/order/webSokect/{uid}")
+@ServerEndpoint(value = "/order/webSokect/{uId}" )
 @Slf4j
 public class WebSocketServerUtil {
     private Session session;
-    private static CopyOnWriteArraySet<WebSocketServerUtil > webSocketSet = new CopyOnWriteArraySet<>();
-    private static ConcurrentHashMap<Long,WebSocketServerUtil > webSocketMap  = new ConcurrentHashMap<>();
-    private Long uId = null;
+    private final static CopyOnWriteArraySet<WebSocketServerUtil > webSocketSet = new CopyOnWriteArraySet<>();
+    private final static ConcurrentHashMap<String,WebSocketServerUtil > webSocketMap  = new ConcurrentHashMap<>();
+    private String uId = null;
 
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("uId") Long uId){
+    public void onOpen(Session session, @PathParam("uId") String uId){
+        log.info("uId:{}",uId);
         this.session = session;
         this.uId = uId;
         if(webSocketMap .containsKey(uId)){
@@ -43,6 +45,7 @@ public class WebSocketServerUtil {
 
     @OnClose
     public void onClose(){
+        log.info("uid:{}",uId);
         if(webSocketMap.containsKey(uId)){
             webSocketMap.remove(uId);
             //从set中删除
@@ -68,16 +71,18 @@ public class WebSocketServerUtil {
      * 发送自定义消息
      * */
     public static void sendInfo(String message, Long uId) throws Exception {
-
         //log.info("发送消息到:"+uId+"，报文:"+message);
-
+        log.info("message{}",message);
         if(webSocketMap.containsKey(uId)){
-            webSocketMap.get(uId).sendMessage(message);
+            if (!message.isEmpty()){
+                webSocketMap.get(uId).sendMessage(message);
+            }
+            log.warn("目前消息为空");
+            webSocketMap.get(uId).sendMessage("目前没有消息");
         }else{
             log.error("用户"+uId+",不在线！");
             throw new Exception("连接已关闭，请刷新页面后重试");
         }
-
     }
 
 

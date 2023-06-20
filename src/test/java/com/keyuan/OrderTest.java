@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyuan.entity.Order;
 import com.keyuan.mapper.GoodMapper;
 import com.keyuan.mapper.OrderMapper;
+import com.keyuan.service.IOrderService;
 import com.keyuan.utils.RedisContent;
 import com.keyuan.utils.RedisSolve;
+import com.keyuan.utils.WebSocketServerUtil;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -50,7 +52,8 @@ import static com.keyuan.utils.RedisContent.CACHE_ORDERNAME;
  * @author:how meaningful
  * @date:2023/5/15
  **/
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
 @Slf4j
 public class OrderTest {
     @Autowired
@@ -65,7 +68,12 @@ public class OrderTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Resource
+    private WebSocketServerUtil webSocketServerUtil;
+    @Resource
     private OrderMapper mapper;
+
+    @Resource
+    private IOrderService orderService;
     @Resource
     private RedisSolve redisSolve;
     @Test
@@ -158,6 +166,14 @@ public class OrderTest {
     @Test
     public  void testOrder(){
         Order order = new Order(null,1001,"1001,1002",10L,"不要放辣椒",10001L,0,10,LocalDateTime.now(),LocalDateTime.now().plusHours(1),LocalDateTime.now().plusHours(2),333,new BigDecimal(10.5));
+        orderService.createOrder(order);
 
+    }
+
+    @Test
+    public void testWebSockect(){
+        while(true){
+            webSocketServerUtil.sendMessage("你好");
+        }
     }
 }

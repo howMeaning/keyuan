@@ -13,6 +13,17 @@ spring:
     password: 123
     #开启发布确认模式
     publisher-confirm-type: correlated
+    #这里开启重试机制
+    listener:
+      #开启手动应答
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          multiplier: 1
+          max-attempts: 3
+          stateless: true
+
   application:
     name: keyuan
   redis:

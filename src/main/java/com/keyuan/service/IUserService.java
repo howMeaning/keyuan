@@ -13,4 +13,8 @@ public interface IUserService extends IService<User> {
     Result getUserByToken(String token);
 
     Result updateAreaById(Double x,Double y,Long id);
+
+    Long selectUserByShopId(Long shopId);
+
+    User selectUserById(Long id);
 }

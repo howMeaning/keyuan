@@ -15,6 +15,6 @@
     </insert>
 
     <select id="selectScaleByGoodId" resultType="scale">
-        select id,scale,price,good_id where good_id =#{goodId}
+        select id,scale,price,good_id from good_scale where good_id =#{goodId}
     </select>
 </mapper>

@@ -7,10 +7,13 @@ import com.keyuan.entity.Order;
 import java.util.List;
 
 public interface IOrderService extends IService<Order> {
-    Order createOrder(Order order);
+    Result createOrder(Order order);
 
-    Result confirmOrder(Order order);
+    Result OrderManager(Order order);
 
     List<Order> getAllOrder();
 
+    Order selectOrderById(Long id);
+
+//    Result cancelOrder(Order order);
 }

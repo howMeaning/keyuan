@@ -22,6 +22,6 @@ public class SnakeController {
 
     @GetMapping("/getSnake/{id}/{shopId}")
     public Result getSnake(@RequestParam("id") String SnakeId,@RequestParam("shopId")Long shopId){
-        return snakeService.getSnake(SnakeId,shopId);
+        return Result.ok(snakeService.getSnake(SnakeId,shopId));
     }
 }

@@ -1,12 +1,14 @@
 package com.keyuan.interceptor;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.keyuan.dto.UserDTO;
 import com.keyuan.entity.User;
 import com.keyuan.utils.RedisContent;
 import com.keyuan.utils.UserHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -25,26 +27,33 @@ import java.util.Map;
  * @author:how meaningful
  * @date:2023/5/26
  **/
-@Component
+@Slf4j
 public class VisitInterceptor implements HandlerInterceptor {
-    @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    public VisitInterceptor(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String token = request.getHeader("token");
         //找缓存
         HashOperations<String, String, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
-        Map<String, String> entries = stringObjectObjectHashOperations.entries(RedisContent.CACHEGOOD+token);
+        Map<String, String> entries = stringObjectObjectHashOperations.entries(RedisContent.CACHEUSER+token);
         if (entries.isEmpty()){
             //406表示当前用户未授权
-           response.setStatus(406);
+            log.warn("当前用户未授权!");
         }
+        log.info("entries:{}",entries);
         //如果存在,key应该是id,value应该是User,将user存到ThreadLocal当中
-        UserDTO userDTO = BeanUtil.fillBeanWithMap(entries, new UserDTO(), false);
+        UserDTO userDTO = BeanUtil.fillBeanWithMap(entries, new UserDTO(),
+                new CopyOptions().setIgnoreNullValue(true)
+                );
 
         if (userDTO.getX() == null &&userDTO.getY()==null){
             //407表示当前没有位置
-            response.setStatus(407);
+            log.warn("当前用户没有位置!");
         }
 
         UserHolder.savesUser(userDTO);

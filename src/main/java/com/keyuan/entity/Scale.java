@@ -1,5 +1,6 @@
 package com.keyuan.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,10 +26,12 @@ public class Scale {
      *规模:
      * 和price是一对一的关系
      */
+    @TableField("scale")
     private String scale;
     /**
      * 多个
      */
+    @TableField("price")
     private String price;
 
     private Long goodId;

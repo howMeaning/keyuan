@@ -17,10 +17,11 @@ import java.time.LocalDateTime;
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class shopTest {
-    @Test
+   /* @Test
     public void testShop(){
         ShopDTO shopDTO = new ShopDTO(1L,"肠粉类","肠粉王","光祖北路","12412423","外卖订单", LocalDateTime.of(2023,5,20,18,12,12),12.111, 12.3333, 10, 15L, null,"深圳");
         Shop shop = BeanUtil.copyProperties(shopDTO, Shop.class);
         System.out.println(shop);
-    }
+    }*/
+
 }

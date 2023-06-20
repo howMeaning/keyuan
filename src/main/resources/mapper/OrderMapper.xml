@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.keyuan.mapper.OrderMapper">
     <resultMap id="mapGood" type="order">
-        <id property="id" column="order_id"/>
+        <id property="orderId" column="order_id"/>
         <result property="orderNumber" column="order_number"/>
         <result property="goodId" column="good_id"/>
         <result property="shopId" column="shop_id"/>
@@ -14,22 +14,26 @@
         <result property="payTime" column="pay_time"/>
         <result property="refundTime" column="refund_time"/>
         <result property="payMoney" column="pay_money"/>
+        <result property="requireMoney" column="require_money"/>
         <result property="remark" column="remark"/>
-        <result property="status" column="order_status"/>
+        <result property="orderStatus" column="order_status"/>
     </resultMap>
     <!--增加订单-->
     <insert id="createOrder">
         insert into
-        t_order(order_id,order_number,good_id,shop_id,table_id,use_type,create_time,pay_time,refund_time,pay_money,remark,order_status)
-        values(#{id},#{orderNumber},#{goodId},#{shopId},#{tableId},#{useType},#{createTime},#{payTime},#{refundTime},#{payMoney},#{remark},#{status})
+        t_order(order_id,order_number,good_id,shop_id,table_id,use_type,create_time,pay_time,refund_time,pay_money,require_money,remark,order_status)
+        values(#{orderId},#{orderNumber},#{goodId},#{shopId},#{tableId},#{useType},#{createTime},#{payTime},#{refundTime},#{payMoney},#{requireMoney},#{remark},#{orderStatus})
     </insert>
     <!--修改状态根据id-->
     <update id="updateStatusById">
-        update t_order set order_status = #{status}  where order_id=#{id}
+        update t_order set order_status = #{orderStatus}  where order_id=#{orderId}
     </update>
     <!--查状态根据id-->
     <select id="selectStatusById" resultType="java.lang.Integer" resultMap="mapGood">
-        select order_status from t_order where order_id = #{id}
+        select order_status from t_order where order_id = #{orderId}
     </select>
     <select id="selectAllOrder" resultType="com.keyuan.entity.Order"></select>
+    <select id="selectOrderById" resultType="com.keyuan.entity.Order">
+        select * from t_order where order_id = #{orderId}
+    </select>
 </mapper>

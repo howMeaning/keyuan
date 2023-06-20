@@ -3,6 +3,7 @@ package com.keyuan.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.keyuan.dto.GoodDTO;
 import com.keyuan.dto.Result;
+import com.keyuan.dto.ScaleDTO;
 import com.keyuan.entity.Scale;
 
 import java.util.List;
@@ -16,7 +17,8 @@ import java.util.List;
 public interface IScaleService extends IService<Scale> {
 
 
-    Result getScale(Long goodId,Long shopId);
+    List<ScaleDTO> getScale(Long goodId, Long shopId);
 
      int insertScale(GoodDTO goodDTO);
+
 }

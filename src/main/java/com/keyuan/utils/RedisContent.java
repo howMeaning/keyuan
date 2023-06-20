@@ -22,7 +22,7 @@ public final class RedisContent {
 
     public static final String RANKKEY = "good:rank:";
 
-    public static final String CACHE_ORDERNAME="cache:order:userid:";
+    public static final String CACHE_ORDERNAME="cache:order:userId:";
 
     public static final String LOCKKEY = "lock:order:";
 
