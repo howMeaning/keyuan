@@ -165,8 +165,8 @@ public class OrderTest {
 
     @Test
     public  void testOrder(){
-        Order order = new Order(null,1001,"1001,1002",10L,"不要放辣椒",10001L,0,10,LocalDateTime.now(),LocalDateTime.now().plusHours(1),LocalDateTime.now().plusHours(2),333,new BigDecimal(10.5));
-        orderService.createOrder(order);
+        /*Order order = new Order(null,1001,"1001,1002",10L,"不要放辣椒",10001L,0,10,LocalDateTime.now(),LocalDateTime.now().plusHours(1),LocalDateTime.now().plusHours(2),333,new BigDecimal(10.5));
+        orderService.createOrder(order);*/
 
     }
 

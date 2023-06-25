@@ -19,7 +19,7 @@ spring:
       simple:
         retry:
           enabled: true
-          initial-interval: 1000
+          initial-interval: 10000
           multiplier: 1
           max-attempts: 3
           stateless: true
@@ -59,7 +59,6 @@ spring:
       max-request-size: 100MB
 mybatis-plus:
   type-aliases-package: com.keyuan.entity
-
   global-config:
     db-config:
       id-type: auto
@@ -72,6 +71,7 @@ pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true
   params: count=countSql
+
 logging:
   #日志的等级
   level:

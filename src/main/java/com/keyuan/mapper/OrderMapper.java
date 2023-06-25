@@ -13,7 +13,7 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Integer selectStatusById(Long orderId);
 
-    Integer updateStatusById(@Param("id") Long orderId,@Param("orderStatus") Integer  status);
+    Integer updateStatusById(@Param("orderId") Long orderId,@Param("orderStatus") Integer  status);
 
     List<Order> selectAllOrder();
 
