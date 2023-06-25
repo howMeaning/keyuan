@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div {
+            width: 300px;
+            height: 200px;
+            border: 1px solid #000;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 输入内容 -->
+    <input type="text" name="" id="" placeholder="请输入内容">
+    <!-- 发送请求 -->
+    <button>发送</button>
+    <!-- 接收websocket服务得数据 -->
+    <div></div>
+
+    <script>
+        var input = document.querySelector('input')
+        var button = document.querySelector('button')
+        var div = document.querySelector('div')
+        // 'ws://echo.websocket.org/'这个服务地址是websocket官方文档中的地址
+        // 不用纠结，后面下一个案例会把他换成自己的
+        // 创建websocket服务地址
+        const socket = new WebSocket('ws://127.0.0.1:8081/order/webSokect/1')
+
+        // 当与服务器连接成功出发open事件（websocket四大基本事件https://www.runoob.com/html/html5-websocket.html）
+
+        socket.addEventListener('open', function () {
+            div.innerHTML = '连接服务器成功'
+        })
+
+
+        button.addEventListener('click', function () {
+            var value = input.value
+            console.log(value);
+            socket.send(value)
+        })
+
+        socket.addEventListener('message', function (e) {
+            div.innerHTML = e.data
+        })
+        // 连接成功后的回调函数
+        socket.onopen = function (params) {
+            console.log('客户端连接成功')
+            // 向服务器发送消息
+            socket.send('hello')
+        };
+
+        // 从服务器接受到信息时的回调函数
+        socket.onmessage = function (e) {
+            console.log('收到服务器响应', e.data)
+        };
+
+        // 连接关闭后的回调函数
+        socket.onclose = function (evt) {
+            console.log("关闭客户端连接");
+        };
+
+        // 连接失败后的回调函数
+        socket.onerror = function (evt) {
+            console.log("连接失败了");
+        };
+    </script>
+</body>
+
+</html>
