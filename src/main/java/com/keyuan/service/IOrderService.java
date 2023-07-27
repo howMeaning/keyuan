@@ -9,11 +9,13 @@ import java.util.List;
 public interface IOrderService extends IService<Order> {
     Result createOrder(Order order);
 
-    Result OrderManager(Order order);
+    Result confirmOrder(Order order);
 
     List<Order> getAllOrder();
 
     Order selectOrderById(Long id);
+
+    Result cancelOrder(Order order);
 
 //    Result cancelOrder(Order order);
 }

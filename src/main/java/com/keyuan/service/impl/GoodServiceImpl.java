@@ -244,6 +244,7 @@ public class GoodServiceImpl extends ServiceImpl<GoodMapper, Good> implements IG
 
     @Override
     public List<Good> getRankFive(Long shopId) {
+        //zrange key min max 先找所有数据
         Set<String> range = stringRedisTemplate.opsForZSet().range(RANKKEY + shopId, 1, -1);
         log.info("range:{}", range);
         //如果这里为空
@@ -253,11 +254,12 @@ public class GoodServiceImpl extends ServiceImpl<GoodMapper, Good> implements IG
                 stringRedisTemplate.opsForZSet().add(RANKKEY + shopId, String.valueOf(rank.getId()), rank.getSoleNum());
             }
         }
-        //这里进行排行榜操作
+        //数据库缓存过后直接进行排行榜操作,这里肯定有数据
         Set<String> top5 = stringRedisTemplate.opsForZSet().reverseRange(RANKKEY + shopId, 0, 4);
         List<Long> ids = top5.stream().map(Long::valueOf).collect(Collectors.toList());
         log.info("ids:{}", ids);
         List<Good> top5Good = goodMapper.selectListByIds(ids);
+        log.info("排序后:{}",top5Good);
         if (CollectionUtil.isEmpty(top5Good)) {
             return Collections.emptyList();
         }

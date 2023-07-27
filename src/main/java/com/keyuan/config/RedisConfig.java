@@ -16,7 +16,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
  **/
 @Configuration
 public class RedisConfig {
-    @Bean
+   /* @Bean
     public LettuceClientConfigurationBuilderCustomizer lettuceClientConfigurationBuilderCustomizer(){
         return new LettuceClientConfigurationBuilderCustomizer() {
             @Override
@@ -24,7 +24,7 @@ public class RedisConfig {
                     clientConfigurationBuilder.readFrom(ReadFrom.REPLICA_PREFERRED);
             }
         };
-    }
+    }*/
 
     /**
      * 分布式锁的配置

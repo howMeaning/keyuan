@@ -66,16 +66,16 @@
     <select id="selectListByIds" resultType="com.keyuan.entity.Good">
         select id,food_name,food_price,food_type,snake_id,hasScale,flavor,optional_name,soleNum,image,shop_id,update_time,end_time from t_good
         <where>
-            id in 
-            <foreach collection="ids" open="(" separator="," item="id" close=")">
+             id in
+                <foreach collection="ids" open="(" separator="," item="id" close=")">
+                    #{id}
+                </foreach>
+            order by
+                Field(id,
+                <foreach collection="ids"  separator="," item="id" >
                 #{id}
-            </foreach>
-                order by 
-                Field(
-            <foreach collection="ids"  separator="," item="id" >
-                #{id}
-            </foreach>
-            ) and is_delete = 0
+                </foreach>
+            )
         </where>
     </select>
     <select id="selectGoodByName" resultType="com.keyuan.entity.Good">

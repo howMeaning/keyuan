@@ -19,6 +19,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @descrition:在这里需要判断用户是否开启定位模式
@@ -40,6 +41,7 @@ public class VisitInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         //找缓存
         HashOperations<String, String, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
+        stringRedisTemplate.opsForValue();
         Map<String, String> entries = stringObjectObjectHashOperations.entries(RedisContent.CACHEUSER+token);
         if (entries.isEmpty()){
             //406表示当前用户未授权

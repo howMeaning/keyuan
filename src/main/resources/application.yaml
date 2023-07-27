@@ -5,24 +5,17 @@ server:
       force-response: true
       charset: UTF-8
 spring:
-  #rabbitmq的配置
   rabbitmq:
-    host: 192.168.239.100
-    port: 5672
+    host: 192.168.239.100 # rabbitMQ的ip地址
+    port: 5672 # 端口
     username: admin
     password: 123
-    #开启发布确认模式
+    virtual-host: /
+    #做消息可靠性
     publisher-confirm-type: correlated
-    #这里开启重试机制
-    listener:
-      #开启手动应答
-      simple:
-        retry:
-          enabled: true
-          initial-interval: 10000
-          multiplier: 1
-          max-attempts: 3
-          stateless: true
+    publisher-returns: true
+    template:
+      mandatory: true
 
   application:
     name: keyuan
@@ -31,11 +24,6 @@ spring:
     port: 6380
     password: 1234
     type: com.zaxxer.hikari.HikariDataSource
-    sentinel:
-      master: mymaster
-      nodes:
-        - 192.168.239.100:27001
-        - 192.168.239.100:27002
   datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
       password: '1234'
@@ -64,7 +52,7 @@ mybatis-plus:
       id-type: auto
   configuration:
     aggressive-lazy-loading: true
-
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 #pageHelp的配置
 # PageHelper分页插件
 pagehelper:

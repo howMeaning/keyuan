@@ -5,6 +5,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.listener.Topic;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +22,15 @@ public class RabbitMqDeclare {
 
 
     @Bean
-    public DirectExchange normalExchange(){
-        return  new DirectExchange(EXCHANGE_NAME, false, true);
+    public TopicExchange topicExchange(){
+        return  new TopicExchange(EXCHANGE_NAME);
     }
+
+    @Bean
+    public Queue normalQueue(){
+        return new Queue(QUEUE_NAME);
+    }
+
 
 
     /**
@@ -31,28 +38,25 @@ public class RabbitMqDeclare {
      * @return
      */
     @Bean
-    public Queue normalQueue(){
-        Map<String, Object> arg = new HashMap<>();
+    public Queue normalToDeadQueue(){
         //设置死信交换机
-        return QueueBuilder.durable(QUEUE_NAME)
-                .ttl(60000)
+        return QueueBuilder.
+                durable(NORMALTODEAD)
+                .ttl(10000)
                 .deadLetterExchange(DEADEXCHANGE_NAME)
                 .deadLetterRoutingKey(DEAD_ROUNTING_KEY)
-                .withArguments(arg).build();
+                .build();
     }
-    /**
-     * 正常队列的绑定
-     * @param normalQueue 正常队列
-     * @param normalExchange 正常交换机
-     * @return
-     */
     @Bean
-    public Binding normalBinding(
-            @Qualifier("normalQueue") Queue normalQueue,
-            @Qualifier("normalExchange")DirectExchange normalExchange)
-    {
-        return BindingBuilder.bind(normalQueue).to(normalExchange).with(NORMAL_ROUTING_KEY);
+    public Binding normalBinding(){
+        return BindingBuilder.bind(normalQueue()).to(topicExchange()).with(NORMAL_ROUTING_KEY);
     }
+    @Bean
+    public Binding normalToDeadQueueBind(){
+        return BindingBuilder.bind(normalToDeadQueue()).to(topicExchange()).with(NORMALTODEAD_ROUTING_KEY);
+    }
+
+
 
  /*
 
@@ -83,20 +87,5 @@ public class RabbitMqDeclare {
     */
 
 
-
-    ///私信交换机的绑定
-    @Bean
-    public DirectExchange deadExchange(){
-        return new DirectExchange(DEADEXCHANGE_NAME);
-    }
-
-    @Bean
-    public Queue deadQueue(){
-        return new Queue(DEADQUEUE_NAME);
-    }
-    @Bean
-    public Binding deadBinding(){
-        return BindingBuilder.bind(deadQueue()).to(deadExchange()).with(DEAD_ROUNTING_KEY);
-    }
 
 }

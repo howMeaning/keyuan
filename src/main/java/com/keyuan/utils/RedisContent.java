@@ -30,6 +30,7 @@ public final class RedisContent {
 
     public static final String CACHEUSER = "cache:user:";
 
+    public static final String CACHEBLOOMFILTER ="filter:shop:";
 
 
 

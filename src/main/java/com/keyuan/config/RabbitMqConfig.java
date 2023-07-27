@@ -1,8 +1,11 @@
 package com.keyuan.config;
 
+import com.keyuan.utils.RabbitContent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ReturnedMessage;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.retry.MessageRecoverer;
+import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.BeansException;
@@ -36,4 +39,6 @@ public class RabbitMqConfig implements ApplicationContextAware {
                 returnedMessage.getRoutingKey(),
                 returnedMessage.getMessage().toString()));
     }
+
+
 }

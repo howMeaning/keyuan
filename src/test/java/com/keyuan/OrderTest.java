@@ -9,6 +9,7 @@ import com.keyuan.entity.Order;
 import com.keyuan.mapper.GoodMapper;
 import com.keyuan.mapper.OrderMapper;
 import com.keyuan.service.IOrderService;
+import com.keyuan.utils.RabbitContent;
 import com.keyuan.utils.RedisContent;
 import com.keyuan.utils.RedisSolve;
 import com.keyuan.utils.WebSocketServerUtil;
@@ -17,7 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,17 +38,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.keyuan.utils.RabbitContent.*;
 import static com.keyuan.utils.RedisContent.CACHE_ORDERNAME;
 
 /**
@@ -176,4 +180,56 @@ public class OrderTest {
             webSocketServerUtil.sendMessage("你好");
         }
     }
+
+    @Test
+    public void testIncrement(){
+        String randomStr = stringRedisTemplate.opsForValue().get("order:random:2023:07:27");
+        if (BeanUtil.isEmpty(randomStr)) {
+            Integer randomId = RandomUtil.randomInt(100, 10000);
+            redisSolve.set(RedisContent.RANDOMNUMBER + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy:MM:dd")), randomId);
+            log.info("随机数:{}",randomId);
+        }
+        //不为空直接incre就行
+        Long increment = stringRedisTemplate.opsForValue().increment("order:random:2023:07:27");
+        log.info("increment后的值:{}",increment.intValue());
+    }
+    @Resource
+    private RabbitTemplate rabbitTemplate;
+    @Test
+    public void testTTLMsg() {
+        // 创建消息
+        Message message = MessageBuilder
+                .withBody("hello, ttl message".getBytes(StandardCharsets.UTF_8))
+                .setExpiration("5000")
+                .build();
+        // 消息ID，需要封装到CorrelationData中
+        CorrelationData correlationData = new CorrelationData(UUID.randomUUID().toString());
+        // 发送消息
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, NORMAL_ROUTING_KEY, message, correlationData);
+        log.debug("发送消息成功");
+    }
+
+    @Test
+    public void testSend2(){
+        String s = "你好";
+        rabbitTemplate.convertAndSend(RabbitContent.NORMALTODEAD,NORMALTODEAD_ROUTING_KEY,s);
+        log.info("发送成功");
+    }
+
+    @Test
+    public void testSend3() {
+        rabbitTemplate.convertAndSend(RabbitContent.EXCHANGE_NAME, "order.normal","你好");
+        log.info("发送成功");
+        long second = ChronoUnit.SECONDS.between(LocalDateTime.of(2023,7,27,19,52),LocalDateTime.now());
+        long l = second / 60;
+
+        System.out.println(second);
+    }
+@Test
+    public void testCreateTime(){
+    System.out.println(LocalDateTime.now());
+    if (LocalDateTime.now().isBefore(LocalDateTime.of(2023,7,27,20,30,20).plusMinutes(30))) {
+        System.out.println("你好");
+    }
+}
 }

@@ -105,6 +105,4 @@ public class RedisSolve {
         }
         stringRedisTemplate.expire(key, time,timeUnit);
     }
-
-
 }

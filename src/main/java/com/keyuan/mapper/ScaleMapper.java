@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface ScaleMapper extends BaseMapper<Scale> {
 
-
     /**
      * 插入optional
      */

@@ -34,7 +34,7 @@
         </where>
     </select>
     <select id="selectAll" resultType="com.keyuan.entity.Shop">
-
+        select * from t_shop
     </select>
     <select id="selectShopById" resultType="com.keyuan.entity.Shop">
         select id,type_id,name,address,use_id,shop_function,open_hour,x,y,sold,avg_price,create_time,update_time,image,area

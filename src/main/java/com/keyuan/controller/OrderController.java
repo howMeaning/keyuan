@@ -31,7 +31,7 @@ public class OrderController {
 
     @PostMapping("/confirmOrder")
     public Result confirmOrder(@RequestBody Order order){
-        return orderService.OrderManager(order);
+        return orderService.confirmOrder(order);
     }
 
 
@@ -40,8 +40,9 @@ public class OrderController {
         return Result.ok(orderService.getAllOrder());
     }
 
-/*    @PostMapping("/cancelOrder")
+    @PostMapping("/cancelOrder")
     public Result cancelOrder(@RequestBody Order order){
+
         return orderService.cancelOrder(order);
-    }*/
+    }
 }

@@ -20,6 +20,7 @@ public class UserHolder {
     }
 
     public static void removeUser(){
+        UserDTO user = UserHolder.getUser();
         tl.remove();
     }
 }

@@ -41,6 +41,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,16 +142,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     /**
      *
-     *这里生成订单之前需要根据订单id找缓存,如果缓存没有找数据库,如果数据库当中没有表示当前没有订单,则直接创建
+     *这里生成订单之前需要根据订单id找缓存
      * 如果缓存当中没有或者数据库当中有
      *   则查看order当中是否存在payTime,
      *      payTime如果存在,则payTime跟createTime做对比
      *          如果时间>30分钟
-     *              则找状态,如果状态是333表示当前订单已经过期,如果不是则直接改订单状态(也算是兜底方案,防止rabbitMQ宕机)
-     *                  发消息给延时队列直接将缓存状态修改
+     *              则找状态,如果状态是333表示当前订单已经过期,如果不是则直接改订单状态
      *          如果时间<30分钟
      *              则查找状态,如果状态是400表示当前订单已经成功,如果还是300,则将订单状态改成400
-     *                  发消息给成功队列,进行缓存一致性
      *      paytime如果不存在,又可能取消了订单然后当前可能是又取消了,则直接根据createTime和当前时间做对比
      *          如果<30分钟,直接返回订单id,并标识剩余时间
      *          如果>30分钟,直接返回订单id,表示当前订单已过期
@@ -162,14 +161,50 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     @Override
     public Result createOrder(Order order) {
 
-        //全局唯一id
+        if(order.getOrderId() != null) {
+
+            Boolean aBoolean = stringRedisTemplate.opsForHash().hasKey(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(order.getOrderId()));
+
+            if (!aBoolean) {
+                //这里说明缓存不存在
+                Order newOrder = orderMapper.selectOrderById(order.getOrderId());
+                if (newOrder.getOrderStatus() != 333) {
+                    stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(newOrder.getOrderId()), JSONUtil.toJsonStr(newOrder));
+                }
+            }
+            String orderStr = (String) stringRedisTemplate.opsForHash().get(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(order.getOrderId()));
+            Order newOrder = JSONUtil.toBean(orderStr, Order.class);
+            LocalDateTime payTime = newOrder.getPayTime();
+            if (BeanUtil.isEmpty(payTime)) {
+                if (LocalDateTime.now().isBefore(newOrder.getCreateTime().plusMinutes(30))) {
+                    if (newOrder.getOrderStatus() == 300) {
+                        //这里返回一个剩余时间
+                        long minutes = ChronoUnit.MINUTES.between(newOrder.getCreateTime(), LocalDateTime.now());
+                        return Result.ok("订单已创建成功,剩余时间" + minutes + "分钟");
+                    }
+                }
+                else {
+                    if (newOrder.getOrderStatus() == 333) {
+                        stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(newOrder.getOrderId()), JSONUtil.toJsonStr(newOrder));
+                        return Result.fail(333, "当前的订单已过期");
+                    } else {
+                        newOrder.setOrderStatus(333);
+                        stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(newOrder.getOrderId()), JSONUtil.toJsonStr(newOrder));
+                        return Result.fail(333, "当前订单已过期,订单id:" + order.getOrderId() + "");
+                    }
+                }
+            }
+            return Result.ok("当前订单已完成...");
+        }
+        //id不存在,直接表示第一次创
         long orderId = redisIDWorker.nextId("order");
 
-
-        //防止重复下单操作
         RLock lock = redissonClient.getLock(LOCKKEY + orderId);
+        boolean result = finishOrder(order, orderId, lock);
+        return result ? Result.ok("创建订单成功,订单编号:" + orderId + "") : Result.fail("创建订单失败订单编号:" + orderId + "");
+    }
 
-
+    private boolean finishOrder(Order order, long orderId, RLock lock) {
         try {
             boolean islock = lock.tryLock();
 
@@ -179,7 +214,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
             if (!islock || deliverTag != null) {
                 log.error("不允许重复下单或订单已存在,单号:{}", orderId);
-                return null;
+                return false;
             }
 
             UserDTO user = UserHolder.getUser();
@@ -203,11 +238,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             if (success == 1) {
                 //创建订单成功,需要将订单插入到缓存
                 stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME + order.getUserId(), String.valueOf(orderId), JSONUtil.toJsonStr(order));
-
-                return Result.ok(order);
+                return true;
             }
             //这里表示创建失败
-            return Result.fail("创建订单失败!");
+            log.error("创建订单失败,单号为:{}",order.getOrderId());
+            return false;
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -229,9 +264,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
      */
     @Override
     @Transactional
-    public Result OrderManager(Order order) {
+    public Result confirmOrder(Order order) {
         //添加CallBack
-        CorrelationData correlationData = new CorrelationData(order.getOrderId().toString());
+     CorrelationData correlationData = new CorrelationData(order.getOrderId().toString());
      Message message = new Message(String.valueOf(order.getOrderId()).getBytes());
      message.getMessageProperties().setDeliveryTag(order.getOrderId());
 
@@ -250,77 +285,37 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             //这里表示不为空 找缓存状态
             HashOperations<String, Object, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
             UserDTO user = UserHolder.getUser();
+            if (user==null){
+                return Result.fail("当前用户未授权");
+            }
             String orderStr = stringObjectObjectHashOperations.get(CACHE_ORDERNAME + user.getId(), String.valueOf(order.getOrderId()));
             Order cacheOrder = JSONUtil.toBean(orderStr, Order.class);
+
             if (!BeanUtil.isEmpty(order) && order.getOrderStatus() != null) {
-                if (cacheOrder.getOrderStatus() == 300 && order.getCreateTime().plusMinutes(20L).isAfter(order.getPayTime())) {
+                if (cacheOrder.getOrderStatus() == 300 && order.getCreateTime().plusMinutes(30).isAfter(order.getPayTime())) {
                     synchronized (order.getOrderId()) { //这里应该最好要加个锁
                         //这里表示状态是300 并且没有过期的话
                         //改状态
                         orderMapper.updateStatusById(order.getOrderId(), 400);
-                        //该销量
+                        //改销量
                         goodService.updateSoleNumByIds(order.getGoodId(), order.getShopId());
                         //发消息
-                        rabbitTemplate.convertAndSend(EXCHANGE_NAME,NORMAL_ROUTING_KEY, message, correlationData);
+                        rabbitTemplate.convertAndSend(EXCHANGE_NAME,"order.normal", message, correlationData);
                         log.info("修改状态,销量成功,发送消息成功");
                         return Result.ok("订单确认成功!");
                     }
                 }
+                stringRedisTemplate.opsForHash().put(RedisContent.CACHE_ORDERNAME + user.getId(),  String.valueOf(order.getOrderId()), JSONUtil.toJsonStr(cacheOrder.setOrderStatus(333)));
                 return Result.fail("订单已超时!");
             } else {
                 //这里表示缓存状态不存在,则可能缓存不存在或者订单不存在
                 return  Result.fail("订单不存在或者缓存状态不存在!");
             }
         }
-        HashOperations<String, Object, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
-        UserDTO user = UserHolder.getUser();
-        String orderStr = stringObjectObjectHashOperations.get(CACHE_ORDERNAME + user.getId(), String.valueOf(order.getOrderId()));
-        Order cacheorder = JSONUtil.toBean(orderStr, Order.class);
-        if (!BeanUtil.isEmpty(cacheorder) && order.getOrderStatus()== 333){
-            return Result.ok("当前订单已过期!");
-        }
-        else {
-            //表示当前没有支付时间,说明当前的订单取消
-            log.info("当前订单取消");
-            rabbitTemplate.convertAndSend(EXCHANGE_NAME,NORMAL_ROUTING_KEY, order.getOrderId(), correlationData);
-            return Result.ok("订单已取消");
-
-        }
-       /* HashOperations<String, Object, String> stringObjectObjectHashOperations = stringRedisTemplate.opsForHash();
-        //TODO:这里的UserId由ThreadLocal当中获得
-        String cacheStatus = stringObjectObjectHashOperations.get(CACHE_ORDERNAME + order.getUserId(), String.valueOf(order.getId()));
-
-        //改数据库的状态和缓存状态
-        if (StrUtil.isNotBlank(cacheStatus)) {
-            //TODO:三种情况,失败(订单已经失败),成功(防止再次支付),待支付
-            if (Integer.parseInt(cacheStatus) == 300) {
-                //这里表示不为空,则直接改数据库状态,双写一致性下需要将order删除
-                int result = orderMapper.updateStatusById(order.getId(), OrderStatus.SUCCESS_STATUS);
-                if (result > 0) {
-                    log.info("数据库状态修改成功,orderId:{}", order.getId());
-                    //TODO:发送消息并且做缓存的一致性操作
-                    rabbitTemplate.convertAndSend(EXCHANGE_NAME, NORMAL_ROUTING_KEY, order.getId(), correlationData);
-                    //这里改销量
-                    goodService.updateSoleNumByIds(order.getGoodId(), order.getShopId());
-                    return Result.ok(Integer.parseInt(cacheStatus), "确认订单成功!orderId:" + order.getId() + "");
-                }
-                log.error("数据库状态修改失败:{}", order.getId());
-                //这里表示Result<0则直接返回错误信息
-                return Result.fail("确认消息失败!");
-            } else if (Integer.parseInt(cacheStatus) == 400){
-                return Result.fail("订单已经交易成功");
-            } else if (Integer.parseInt(cacheStatus) == 333){
-                return Result.fail("交易已失败");
-            }
-        }
-        log.error("交易失败,原因:缓存状态不存在!");
-        return Result.fail("交易失败!");*/
+        return Result.fail("当前未付款,无法确认订单...");
     }
 
     /**
-     * 这里应该还有其他状态的判断,还是要先找数据库
-     * 如果finshTime没有或者finshTime-createTime>20则表示失败 333
-     * 这里的order缓存实际上还是要给个过期时间
      *
      * @param
      * @return
@@ -344,24 +339,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
 
-   /* //交易失败接口,需要发送一个延时消息到延时队列当中
+    //交易失败接口,需要发送一个延时消息到延时队列当中
     @Override
     public Result cancelOrder(Order order) {
-        //添加CallBack
-        CorrelationData correlationData = new CorrelationData(UUID.randomUUID(false).toString());
-
+        CorrelationData correlationData = new CorrelationData();
         //这里判断order是否有实付,如果有,则将起修改成400
         //这里进行修改order的状态
-        orderMapper.updateStatusById(orderId, 333);
 
         //这里需要将获得到order的id,和实付
-        Long id = order.getId();
-        BigDecimal requireMoney = order.getRequireMoney();
-        Map<String,String> map = new HashMap<>();
-        map.put(String.valueOf(id),String.valueOf(requireMoney));
-        *//**
-     * 消息发送成功
-     *//*
         correlationData.getFuture().addCallback(
                 result -> log.info("订单拒绝队列消息发送成功!"),
                 ex -> {
@@ -369,11 +354,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                     //这里应该做失败重试机制
                 });
 
-        //发送一个延时消息
-//        Message message = MessageBuilder.withBody(JSONUtil.toJsonStr(map).getBytes(StandardCharsets.UTF_8)).build();
-        rabbitTemplate.convertAndSend(RabbitContent.DEADEXCHANGE_NAME,RabbitContent.DEAD_ROUNTING_KEY,map,correlationData);
+
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME,"order.dead",JSONUtil.toJsonStr(order),correlationData);
         return Result.ok("交易取消");
-    }*/
+    }
 
 
 }

@@ -1,7 +1,6 @@
 package com.keyuan.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.keyuan.dto.Result;
 import com.keyuan.dto.ShopDTO;
@@ -32,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static com.keyuan.utils.RedisContent.CACHESHOPGEO;
+
 /**
  * @descrition:
  * 这里的几个功能:增删改查店铺,查询要用分表查询
@@ -61,6 +62,15 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     private static final ExecutorService GEO_SHOP_EXECUTOR = Executors.newSingleThreadExecutor();
 
+
+    //防止缓存穿透
+    //第一种方式:使用布隆过滤器
+//    private CustomerBloomFilter<Long> customerBloomFilter = CustomerBloomFilter.create(Funnels.longFunnel(),100,0.03);
+
+    //第二种方式:使用自制的布隆过滤器
+    @Resource
+    private CustomerBloomFilter customerBloomFilter;
+
     //当类进行加载过后进行查找
     @PostConstruct
     private void init(){
@@ -69,6 +79,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     /**
      * 这里shop需要有x y
+     * 这里应该要将shop放到guava过滤器当中
      * @param shopDTO
      * @return
      */
@@ -115,7 +126,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
         shopMapper.insertShop(shop);
 
-        return Result.ok("插入Good成功!shopId"+shop.getId()+"");
+        //这里将shop的id进行插入到布隆过滤器当中
+        customerBloomFilter.put(shop.getId());
+        return Result.ok("插入Good成功!shopId:"+shop.getId()+"typeId:"+shop.getTypeId());
     }
 
     /**
@@ -145,7 +158,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         int end = SystemContents.MAX_PAGE_SIZE;
 
         //这里需要指定分页参数,因为GEO数据结构下是带有分页结构
-        GeoResults<RedisGeoCommands.GeoLocation<String>> result = stringRedisTemplate.opsForGeo().search(RedisContent.CACHESHOPGEO + typeId,
+        GeoResults<RedisGeoCommands.GeoLocation<String>> result = stringRedisTemplate.opsForGeo().search(CACHESHOPGEO + typeId,
                 GeoReference.fromCoordinate(x, y),
                 new Distance(5000),
                 RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().limit(end)
@@ -176,8 +189,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         });
 
         //根据id查询数据库
-
-
         List<Shop> shops = shopMapper.selectShopById(ids);
         for (Shop shop : shops) {
             Distance distance = (Distance) objectObjectHashMap.get(shop.getId().toString());
@@ -188,11 +199,16 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Override
     public Result loadShopDataById(Long id,Long typeId) {
-        Shop shop = shopMapper.selectShopOne( id, typeId);
-        if (BeanUtil.isEmpty(shop)){
-            return  Result.fail("这个商店不存在!");
+        //这里进行布隆过滤器问题
+        if (!customerBloomFilter.contain(id)) {
+            //这里表示布隆过滤器当中不存在id,所以直接直接返回这个商店不存在
+            return  Result.fail(333,"这个商店不存在!");
         }
-        Long add = stringRedisTemplate.opsForGeo().add(RedisContent.CACHESHOPGEO + typeId,
+        Shop shop = shopMapper.selectShopOne( id, typeId);
+        /*if (BeanUtil.isEmpty(shop)){
+            return  Result.fail("这个商店不存在!");
+        }*/
+        Long add = stringRedisTemplate.opsForGeo().add(CACHESHOPGEO + typeId,
                 new Point(shop.getX(), shop.getTypeId()), String.valueOf(shop.getId()));
         return Result.ok("加载完毕");
     }
@@ -207,7 +223,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     public Result removeShopById(Long id,Long typeId) {
         int i = shopMapper.deleteById(id);
         if (i>0){
-            stringRedisTemplate.opsForGeo().remove(RedisContent.CACHESHOPGEO+typeId,String.valueOf(id));
+            stringRedisTemplate.opsForGeo().remove(CACHESHOPGEO+typeId,String.valueOf(id));
         }
         return Result.ok("删除成功!");
     }
@@ -224,14 +240,18 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
             Long typeId = entry.getKey();
             //3.2获取同类型的店铺的集合
             List<Shop> value = entry.getValue();
-            String key = "shop:geo:"+typeId;
+            String key = CACHESHOPGEO+typeId;
             //TODO:这个locations的大小就是这个店铺集合的大小
             List<RedisGeoCommands.GeoLocation<String>> locations = new ArrayList<>(value.size());
+
             //3.3写入 redis GEOADD key 经度 纬度 member
             for (Shop shop : value) {
                 //这种效率不太好,这种方式下就是一个shop发送一个请求,连接Redis,千万个商铺就会有千万个连接
 //                stringRedisTemplate.opsForGeo().add(key,new Point(shop.getX(),shop.getY()),shop.getId().toString());
                 locations.add(new RedisGeoCommands.GeoLocation<>(shop.getId().toString(),new Point(shop.getX(),shop.getY())));
+
+                //这里将所有shop的id添加到bloom过滤器当中
+                customerBloomFilter.put(shop.getId());
             }
             //批量的增加,提高了很大的效率
             stringRedisTemplate.opsForGeo().add(key,locations);
